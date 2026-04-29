@@ -1,0 +1,130 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at center, #2b1119, #0f0509);
+    color: #F8F3E6;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    animation: fadeInPage 2s ease-in-out;
+}
+
+@keyframes fadeInPage {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(10px, 3vh, 40px);
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+/* Sección de texto */
+.text-section {
+    flex: 1;
+    padding-right: 20px;
+    z-index: 10;
+}
+
+.title {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(1.8rem, 5vh, 3.2rem);
+    font-weight: 700;
+    margin-bottom: clamp(10px, 3vh, 30px);
+    color: #FFD700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.typing-container {
+    height: 25vh; /* Ocupar máximo 25% de la pantalla para evitar saltos */
+    display: flex;
+    align-items: flex-start;
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(1.4rem, 4vh, 2.4rem);
+    line-height: 1.5;
+    color: #FFF3E0;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+/* Sección del Canvas */
+.canvas-container {
+    flex: 1.2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 65vh; /* Forzar al canvas a no exceder el 65% de la altura de la pantalla */
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.15));
+}
+
+/* Sección del Contador */
+.counter-section {
+    text-align: center;
+    padding: clamp(10px, 2vh, 20px) 40px clamp(20px, 4vh, 40px) 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.counter-title {
+    font-size: clamp(0.9rem, 1.5vh, 1.1rem);
+    margin-bottom: clamp(5px, 1vh, 10px);
+    color: #cccccc;
+}
+
+.counter-time {
+    font-size: clamp(1.2rem, 2.5vh, 1.5rem);
+    font-weight: 600;
+    color: #FFD700;
+    animation: heartbeat 1.5s infinite;
+}
+
+/* Efectos Mágicos */
+.firefly {
+    position: fixed;
+    border-radius: 50%;
+    background-color: #FFD700;
+    box-shadow: 0 0 10px #FFD700, 0 0 20px #FF8C00;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatUp 15s infinite linear, glow 3s infinite alternate;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.05); text-shadow: 0 0 15px rgba(255,215,0,0.8); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.05); text-shadow: 0 0 15px rgba(255,215,0,0.8); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floatUp {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; transform: translateY(80vh) scale(1); }
+    90% { opacity: 1; transform: translateY(10vh) scale(1); }
+    100% { transform: translateY(-10vh) scale(0); opacity: 0; }
+}
+
+@keyframes glow {
+    0% { opacity: 0.3; box-shadow: 0 0 5px #FFD700; }
+    100% { opacity: 1; box-shadow: 0 0 15px #FFD700, 0 0 20px #FF8C00; }
+}
