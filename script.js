@@ -29,9 +29,9 @@ updateCounter();
 // 2. LÓGICA DEL TEXTO TIPO MÁQUINA DE ESCRIBIR (Sin cambios)
 // ----------------------------------------------------
 const messages = [
-    "Si pudiera elegir un lugar seguro, sería a tu lado.",
-    "Cuanto más tiempo estoy contigo más te amo.",
-    "- Moay mira esta huevada ... xd !"
+    "Sana sana colita de rana , si no sana hoy sanara mañana :3.",
+    "Cuanto mas tiempo lo lee mas se enoja >:v.",
+    "- Moay relax , chill bro ... xd"
 ];
 
 let currentMessage = 0;
