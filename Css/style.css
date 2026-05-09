@@ -30,22 +30,48 @@ body {
     align-items: center;
     position: relative;
     z-index: 10;
+    perspective: 1000px; /* Efecto 3D Parallax */
 }
 
 /* Sección de texto */
 .text-section {
     flex: 1;
-    padding-right: 20px;
+    padding: 30px;
+    margin-right: 20px;
     z-index: 10;
+    /* Glassmorphism */
+    background: rgba(20, 5, 10, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease-out;
 }
 
 .title {
     font-family: 'Dancing Script', cursive;
     font-size: clamp(1.8rem, 5vh, 3.2rem);
     font-weight: 700;
-    margin-bottom: clamp(10px, 3vh, 30px);
-    color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    background: linear-gradient(45deg, #FFD700, #FFA500, #FFF3E0, #FFD700);
+    background-size: 300% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shineTitle 4s linear infinite;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+}
+
+.global-title {
+    text-align: center;
+    margin-top: clamp(20px, 4vh, 40px);
+    margin-bottom: 0;
+    z-index: 10;
+    width: 100%;
+}
+
+@keyframes shineTitle {
+    to { background-position: 300% center; }
 }
 
 .typing-container {
@@ -59,12 +85,28 @@ body {
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
+.typing-container::after {
+    content: '|';
+    animation: blinkCursor 1s infinite;
+    color: #FFD700;
+    margin-left: 5px;
+    font-weight: 300;
+}
+
+@keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
 /* Sección del Canvas */
 .canvas-container {
     flex: 1.2;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    transition: transform 0.15s ease-out;
+    transform-style: preserve-3d;
 }
 
 canvas {
@@ -79,10 +121,17 @@ canvas {
 .counter-section {
     text-align: center;
     padding: clamp(10px, 2vh, 20px) 40px clamp(20px, 4vh, 40px) 40px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 0 40px;
+    margin: 0 40px 20px 40px;
     position: relative;
     z-index: 10;
+    /* Glassmorphism */
+    background: rgba(20, 5, 10, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease-out;
 }
 
 .counter-title {
@@ -106,7 +155,7 @@ canvas {
     box-shadow: 0 0 10px #FFD700, 0 0 20px #FF8C00;
     pointer-events: none;
     z-index: 1;
-    animation: floatUp 15s infinite linear, glow 3s infinite alternate;
+    animation: floatUpSway 15s infinite linear, glow 3s infinite alternate;
 }
 
 @keyframes heartbeat {
@@ -117,14 +166,135 @@ canvas {
     100% { transform: scale(1); }
 }
 
-@keyframes floatUp {
-    0% { transform: translateY(100vh) scale(0); opacity: 0; }
-    10% { opacity: 1; transform: translateY(80vh) scale(1); }
-    90% { opacity: 1; transform: translateY(10vh) scale(1); }
-    100% { transform: translateY(-10vh) scale(0); opacity: 0; }
+@keyframes floatUpSway {
+    0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+    10% { opacity: 1; transform: translateY(80vh) translateX(var(--sway-amount)) scale(1); }
+    50% { transform: translateY(40vh) translateX(calc(var(--sway-amount) * -1)) scale(1); }
+    90% { opacity: 1; transform: translateY(10vh) translateX(var(--sway-amount)) scale(1); }
+    100% { transform: translateY(-10vh) translateX(0) scale(0); opacity: 0; }
 }
 
 @keyframes glow {
     0% { opacity: 0.3; box-shadow: 0 0 5px #FFD700; }
     100% { opacity: 1; box-shadow: 0 0 15px #FFD700, 0 0 20px #FF8C00; }
+}
+
+/* Pétalos Cayendo (desde el árbol) */
+.falling-petal {
+    position: absolute;
+    top: 15%; /* Nivel de la copa del árbol */
+    width: 7px;
+    height: 14px;
+    background-color: #FFD700;
+    border-radius: 50% 0 50% 0; /* Forma de pétalo/hoja */
+    box-shadow: 0 0 3px rgba(255, 215, 0, 0.4);
+    pointer-events: none;
+    z-index: 2;
+    animation: fallDownSway linear infinite;
+    opacity: 0; /* Oculto antes del delay */
+    animation-fill-mode: backwards;
+}
+
+@keyframes fallDownSway {
+    0% { transform: translateY(0) translateX(0) rotate(var(--rot-start)); opacity: 0; }
+    10% { opacity: 1; }
+    50% { transform: translateY(35vh) translateX(var(--sway-amount)) rotate(calc(var(--rot-end) / 2)); opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(70vh) translateX(calc(var(--sway-amount) * -1)) rotate(var(--rot-end)); opacity: 0; }
+}
+
+/* Botón de Música */
+.music-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(20, 5, 10, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    font-size: 26px;
+    cursor: pointer;
+    z-index: 100;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.music-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+}
+
+.music-btn.playing {
+    animation: pulseMusic 2s infinite;
+}
+
+@keyframes pulseMusic {
+    0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+    100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+}
+
+/* ------------------------------------------
+   RESPONSIVIDAD (Celulares y Tablets)
+--------------------------------------------- */
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto; /* Permite scroll en móvil si no cabe todo */
+    }
+    
+    .global-title {
+        font-size: clamp(1.5rem, 4vh, 2.2rem);
+        margin-top: 15px;
+        padding: 0 10px;
+    }
+    
+    .main-container {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    .text-section {
+        margin-right: 0;
+        margin-bottom: 20px;
+        padding: 20px;
+        width: 100%;
+    }
+    
+    .typing-container {
+        height: auto;
+        min-height: 15vh;
+        font-size: clamp(1.2rem, 3vh, 1.8rem);
+    }
+    
+    .canvas-container {
+        width: 100%;
+    }
+    
+    canvas {
+        max-height: 50vh;
+    }
+    
+    .counter-section {
+        margin: 0 15px 20px 15px;
+        padding: 15px;
+    }
+    
+    .counter-time {
+        font-size: clamp(1rem, 2vh, 1.2rem);
+    }
+    
+    .music-btn {
+        bottom: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
 }
