@@ -31,8 +31,8 @@ updateCounter();
 // ----------------------------------------------------
 const messages = [
     "Sana sana colita de rana , si no sana hoy sanara mañana :3.",
-    "Cuanto mas tiempo lo lee mas se enoja >:v.",
-    "- bri relax , chill bro ... xd"
+    "Unos makis p' ti :3",
+    "- Moay cuidate mucho"
 ];
 
 let currentMessage = 0;
@@ -89,10 +89,14 @@ function drawFlower(x, y, scale) {
     ctx.restore();
 }
 
-// Función del árbol que devuelve las coordenadas de las puntas
-function drawTreeRecursive(startX, startY, len, angle, branchWidth, levelLimit, level) {
+// Función para dibujar el árbol de manera progresiva
+function drawGrowingTree(startX, startY, len, angle, branchWidth, levelLimit, level, progress) {
+    if (progress <= 0) return [];
+
+    let currentLen = len * Math.min(1, progress);
+
     ctx.save();
-    ctx.strokeStyle = "#4A2F1D"; // Marrón más natural
+    ctx.strokeStyle = "#4A2F1D";
     ctx.fillStyle = "#4A2F1D";
     ctx.lineWidth = branchWidth;
     ctx.lineCap = "round";
@@ -101,54 +105,83 @@ function drawTreeRecursive(startX, startY, len, angle, branchWidth, levelLimit, 
     ctx.translate(startX, startY);
     ctx.rotate(angle * Math.PI / 180);
 
-    // 1. Dibujar el segmento de rama o tronco
     ctx.beginPath();
     ctx.moveTo(0, 0);
 
     if (level === 0) {
-        // Tronco principal ligeramente curvo para más naturalidad
-        ctx.quadraticCurveTo(10, -len / 2, 0, -len);
+        ctx.quadraticCurveTo(10, -currentLen / 2, 0, -currentLen);
     } else {
-        ctx.lineTo(0, -len);
+        ctx.lineTo(0, -currentLen);
     }
     ctx.stroke();
 
-    // 2. Detalles estéticos solo para el tronco principal
-    if (level === 0) {
-        // Base ensanchada (raíces)
+    if (level === 0 && progress > 0.5) {
+        let rootProg = Math.min(1, (progress - 0.5) * 2);
         ctx.beginPath();
-        ctx.moveTo(-branchWidth * 1.2, 0);
-        ctx.quadraticCurveTo(0, -40, branchWidth * 1.2, 0);
+        ctx.moveTo(-branchWidth * 1.2 * rootProg, 0);
+        ctx.quadraticCurveTo(0, -40 * rootProg, branchWidth * 1.2 * rootProg, 0);
         ctx.fill();
 
-        // Textura de corteza
-        ctx.strokeStyle = "#331E10"; // Marrón más oscuro
+        ctx.strokeStyle = "#331E10";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(-15, -20); ctx.lineTo(-10, -110);
-        ctx.moveTo(10, -40); ctx.lineTo(15, -140);
-        ctx.moveTo(-2, -60); ctx.lineTo(3, -150);
+        ctx.moveTo(-15, -20); ctx.lineTo(-10, -110 * rootProg);
+        ctx.moveTo(10, -40); ctx.lineTo(15, -140 * rootProg);
+        ctx.moveTo(-2, -60); ctx.lineTo(3, -150 * rootProg);
         ctx.stroke();
     }
 
+    let tips = [];
     level++;
+    let childProgress = progress - 1;
 
-    // Límite de nivel para pocas ramas y estructura determinística (bifurcar 3 veces -> 8 puntas)
     if (level >= levelLimit) {
-        // Guardamos la transformación actual y obtenemos la posición final de la punta
-        const endCoords = ctx.getTransform().transformPoint(new DOMPoint(0, -len));
-        ctx.restore();
-        return [endCoords]; // Retornamos la coordenada final
+        if (progress >= 1) {
+            const endCoords = ctx.getTransform().transformPoint(new DOMPoint(0, -len));
+            tips.push(endCoords);
+        }
+    } else if (childProgress > 0) {
+        const tips1 = drawGrowingTree(0, -len, len * 0.7, 30, branchWidth * 0.7, levelLimit, level, childProgress * 1.5);
+        const tips2 = drawGrowingTree(0, -len, len * 0.7, -30, branchWidth * 0.7, levelLimit, level, childProgress * 1.5);
+        tips = tips1.concat(tips2);
     }
 
-    // Llamadas recursivas, cada una retorna una lista de coordenadas de sus hijos
-    // Reducción de 0.7 y ángulo de 30 para una apertura limpia
-    const tips1 = drawTreeRecursive(0, -len, len * 0.7, 30, branchWidth * 0.7, levelLimit, level);
-    const tips2 = drawTreeRecursive(0, -len, len * 0.7, -30, branchWidth * 0.7, levelLimit, level);
-
     ctx.restore();
-    // Combinamos todas las listas de coordenadas
-    return tips1.concat(tips2);
+    return tips;
+}
+
+// Función para animar el crecimiento completo del árbol
+function animateTreeGrowth(finishCallback) {
+    let progress = 0;
+    let tips = [];
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        tips = drawGrowingTree(canvas.width / 2, canvas.height, 160, 0, 40, 3, 0, progress);
+        progress += 0.03;
+
+        if (progress < 3.5) {
+            requestAnimationFrame(loop);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            tips = drawGrowingTree(canvas.width / 2, canvas.height, 160, 0, 40, 3, 0, 10);
+            finishCallback(tips);
+        }
+    }
+    loop();
+}
+
+// Función para animar el florecimiento individual
+function drawBloomingFlower(x, y, finalSize) {
+    let currentSize = 0;
+    function bloom() {
+        currentSize += finalSize / 15;
+        if (currentSize > finalSize) currentSize = finalSize;
+        drawFlower(x, y, currentSize);
+        if (currentSize < finalSize) {
+            requestAnimationFrame(bloom);
+        }
+    }
+    bloom();
 }
 
 // Función para dibujar un corazón de girasoles
@@ -160,7 +193,6 @@ function drawHeartShape(cx, cy, scale, totalFlowers) {
             let x = (Math.random() - 0.5) * 40;
             let y = (Math.random() - 0.5) * 40;
 
-            // Ecuación matemática del corazón
             let eqX = x / 10;
             let eqY = y / 10;
             let formula = Math.pow(eqX * eqX + eqY * eqY - 1, 3) - (eqX * eqX * Math.pow(eqY, 3));
@@ -169,47 +201,38 @@ function drawHeartShape(cx, cy, scale, totalFlowers) {
                 let drawX = cx + (x * scale);
                 let drawY = cy - (y * scale);
 
-                // Flores de tamaño variable para el relleno
                 let size = Math.random() * 0.3 + 0.3;
-                drawFlower(drawX, drawY, size);
+                drawBloomingFlower(drawX, drawY, size);
                 flowersDrawn++;
             }
-
             requestAnimationFrame(addHeartFlower);
         }
     }
 
-    // Usamos múltiples hilos para que el corazón se llene muy rápido
-    for (let i = 0; i < 15; i++) {
-        addHeartFlower();
+    // Usamos menos hilos para que el florecimiento se vea más progresivo
+    for (let i = 0; i < 5; i++) {
+        setTimeout(addHeartFlower, i * 200);
     }
 }
 
-// Función principal para posicionar las flores formando un corazón
+// Función principal para posicionar los corazones
 function spawnHearts(tips) {
-    // Encontramos el centro horizontal usando las puntas exteriores
+    if (!tips || tips.length === 0) return;
     const centerX = (tips[0].x + tips[tips.length - 1].x) / 2;
-    // Posicionamos el corazón un poco más arriba de las puntas centrales para coronar el árbol
     const centerY = (tips[1].y + tips[2].y) / 2 - 40;
-
-    // Dibujamos 1 solo corazón grande, bien definido y muy tupido
-    drawHeartShape(centerX, centerY, 25, 1400); // scale: 25. flowers: 1400.
+    drawHeartShape(centerX, centerY, 25, 1400);
 }
 
-// Iniciar animaciones del lienzo
+// Iniciar animaciones
 setTimeout(() => {
-    // Limpiar canvas para que sea transparente y se vea el fondo CSS
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 1. Dibujar árbol determinístico y obtener una lista de todas sus puntas (tips)
-    // Tronco base largo (160), empezamos con un grosor de 40 para que se vea como un tronco real
-    const tips = drawTreeRecursive(canvas.width / 2, canvas.height, 160, 0, 40, 3, 0);
-
-    // 2. Un segundo después, iniciar los 3 corazones que cubran las ramas y el tronco
-    setTimeout(() => {
+    animateTreeGrowth((tips) => {
         spawnHearts(tips);
-        typeWriter(); // Escribimos el texto al mismo tiempo que aparecen las flores
-    }, 1000);
+        typeWriter();
+
+        // Empezar a generar pétalos cayendo un poco después de que salen los corazones
+        setTimeout(createFallingPetals, 2000);
+    });
 }, 500);
 
 // ----------------------------------------------------
@@ -233,7 +256,104 @@ function createFireflies() {
         firefly.style.animationDelay = `${Math.random() * 10}s, ${Math.random() * 3}s`;
         firefly.style.animationDuration = `${Math.random() * 15 + 10}s, ${Math.random() * 2 + 2}s`;
 
+        // Agregar variable para balanceo aleatorio (zig-zag)
+        firefly.style.setProperty('--sway-amount', `${Math.random() * 60 - 30}px`);
+
         document.body.appendChild(firefly);
     }
 }
 createFireflies();
+
+// ----------------------------------------------------
+// 5. LÓGICA DE PÉTALOS CAYENDO
+// ----------------------------------------------------
+function createFallingPetals() {
+    const canvasContainer = document.querySelector(".canvas-container");
+    const petalCount = 20; // Menos pétalos para no recargar visualmente
+    for (let i = 0; i < petalCount; i++) {
+        let petal = document.createElement("div");
+        petal.classList.add("falling-petal");
+
+        // Posicionarlos aleatoriamente pero centrados en el área del árbol (20% a 80% del contenedor)
+        petal.style.left = `${Math.random() * 60 + 20}%`;
+        petal.style.animationDelay = `${Math.random() * 10}s`;
+        petal.style.animationDuration = `${Math.random() * 5 + 6}s`;
+
+        petal.style.setProperty('--sway-amount', `${Math.random() * 80 - 40}px`);
+        petal.style.setProperty('--rot-start', `${Math.random() * 360}deg`);
+        petal.style.setProperty('--rot-end', `${Math.random() * 360 + 360}deg`);
+
+        canvasContainer.appendChild(petal);
+    }
+}
+// createFallingPetals(); ahora se llama desde la animación del árbol
+
+// ----------------------------------------------------
+// 6. LÓGICA DE MÚSICA DE FONDO
+// ----------------------------------------------------
+const musicBtn = document.getElementById("music-btn");
+const bgMusic = document.getElementById("bg-music");
+let isPlaying = false;
+
+bgMusic.volume = 0.4; // Volumen suave
+
+// Sincronizar estado visual con el estado real del audio
+bgMusic.addEventListener("play", () => {
+    isPlaying = true;
+    musicBtn.classList.add("playing");
+    musicBtn.innerHTML = "🎶";
+});
+
+bgMusic.addEventListener("pause", () => {
+    isPlaying = false;
+    musicBtn.classList.remove("playing");
+    musicBtn.innerHTML = "🎵";
+});
+
+musicBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Evitar doble ejecución con el clic global
+    if (isPlaying) {
+        bgMusic.pause();
+    } else {
+        bgMusic.play().catch(() => { });
+    }
+});
+
+// Forzar inicio de la música al primer clic o interacción en la pantalla 
+// (ya que los navegadores suelen bloquear el autoplay automático puro)
+document.body.addEventListener("click", () => {
+    if (!isPlaying) {
+        bgMusic.play().catch(() => { });
+    }
+}, { once: true });
+
+// ----------------------------------------------------
+// 7. LÓGICA PARALLAX 3D (INTERACTIVIDAD CON EL MOUSE)
+// ----------------------------------------------------
+document.addEventListener("mousemove", (e) => {
+    // Calculamos el centro de la pantalla
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    // Obtenemos la posición del mouse relativa al centro (de -1 a 1)
+    const mouseX = (e.clientX - centerX) / centerX;
+    const mouseY = (e.clientY - centerY) / centerY;
+
+    // Aplicamos movimiento al canvas (Árbol) en el eje opuesto para dar profundidad
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+        // Reducimos los multiplicadores para hacerlo más sutil y elegante
+        canvasContainer.style.transform = `translate(${mouseX * -6}px, ${mouseY * -6}px) rotateY(${mouseX * 2.5}deg) rotateX(${mouseY * -2.5}deg)`;
+    }
+
+    // Movimiento a las tarjetas Glassmorphism (Texto y Contador) en la misma dirección
+    const textSection = document.querySelector('.text-section');
+    const counterSection = document.querySelector('.counter-section');
+
+    if (textSection) {
+        textSection.style.transform = `translate(${mouseX * 4}px, ${mouseY * 4}px)`;
+    }
+    if (counterSection) {
+        counterSection.style.transform = `translate(${mouseX * 2}px, ${mouseY * 2}px)`;
+    }
+});
