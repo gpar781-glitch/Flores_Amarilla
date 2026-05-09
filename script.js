@@ -13,6 +13,7 @@ function updateCounter() {
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+
     const minutes = Math.floor((diff / 1000 / 60) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
 
@@ -31,7 +32,7 @@ updateCounter();
 const messages = [
     "Sana sana colita de rana , si no sana hoy sanara mañana :3.",
     "Cuanto mas tiempo lo lee mas se enoja >:v.",
-    "- Moay relax , chill bro ... xd"
+    "- bri relax , chill bro ... xd"
 ];
 
 let currentMessage = 0;
